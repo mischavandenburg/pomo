@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mischavandenburg/pomo/compare/v0.3.0...v0.4.0) (2026-01-21)
+
+
+### Features
+
+* add list command to show recent sessions ([f5698e1](https://github.com/mischavandenburg/pomo/commit/f5698e1a0d61f4cbc7cfe04db37b1cc9c9a52694))
+
 ## [0.3.0](https://github.com/mischavandenburg/pomo/compare/v0.2.0...v0.3.0) (2026-01-21)
 
 
