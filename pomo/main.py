@@ -6,7 +6,7 @@ import typer
 from typing_extensions import Annotated
 
 from pomo import __version__
-from pomo.config import get_config, Config
+from pomo.config import get_config
 from pomo.status import read_status, write_status, Status, SessionType
 from pomo.output import success, info, error
 from pomo.timer import get_remaining, format_duration, get_emoji

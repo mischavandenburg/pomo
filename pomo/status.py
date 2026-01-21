@@ -1,7 +1,7 @@
 """Session status management for pomo."""
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import IntEnum
 from pathlib import Path

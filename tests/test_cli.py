@@ -1,15 +1,11 @@
 """Tests for pomo CLI."""
 
-import os
-from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 from typer.testing import CliRunner
 
 from pomo import __version__
 from pomo.main import app, parse_duration
-from pomo.timer import format_duration, get_remaining
+from pomo.timer import format_duration
 from pomo.status import Status, SessionType
 
 
