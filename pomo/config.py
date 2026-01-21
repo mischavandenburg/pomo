@@ -13,6 +13,7 @@ class Durations:
 
     focus: int = 25 * 60  # 25 minutes in seconds
     break_: int = 5 * 60  # 5 minutes in seconds
+    deep: int = 90 * 60  # 90 minutes in seconds
 
 
 @dataclass
@@ -21,6 +22,7 @@ class Emojis:
 
     focus: str = "\U0001F345"  # Tomato
     break_: str = "\U0001F942"  # Clinking glasses
+    deep: str = "\U0001F345"  # Same tomato for deep work
     warn: list[str] = field(default_factory=lambda: ["\U0001F534", "\U00002B55"])  # Red circle, hollow circle
 
 
@@ -69,12 +71,16 @@ def get_config() -> Config:
                     config.durations.focus = parse_duration_config(data["durations"]["focus"])
                 if "break" in data["durations"]:
                     config.durations.break_ = parse_duration_config(data["durations"]["break"])
+                if "deep" in data["durations"]:
+                    config.durations.deep = parse_duration_config(data["durations"]["deep"])
 
             if "emojis" in data:
                 if "focus" in data["emojis"]:
                     config.emojis.focus = data["emojis"]["focus"]
                 if "break" in data["emojis"]:
                     config.emojis.break_ = data["emojis"]["break"]
+                if "deep" in data["emojis"]:
+                    config.emojis.deep = data["emojis"]["deep"]
                 if "warn" in data["emojis"]:
                     config.emojis.warn = data["emojis"]["warn"]
 

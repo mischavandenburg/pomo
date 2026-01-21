@@ -44,5 +44,7 @@ def get_emoji(config: Config, status: Status, remaining: int) -> str:
 
     if status.session_type == SessionType.FOCUS:
         return config.emojis.focus
+    elif status.session_type == SessionType.DEEP:
+        return config.emojis.deep
     else:
         return config.emojis.break_

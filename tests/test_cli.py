@@ -36,9 +36,11 @@ class TestCLI:
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "start" in result.stdout
+        assert "deep" in result.stdout
         assert "break" in result.stdout
         assert "stop" in result.stdout
         assert "status" in result.stdout
+        assert "init" in result.stdout
 
     def test_start_help(self):
         """Start command should have help text."""
@@ -123,7 +125,73 @@ class TestStatus:
         status = Status(duration_seconds=60)
         assert status.end is not None
 
+    def test_status_with_duration_sets_start(self):
+        """Status with duration should also set start time."""
+        status = Status(duration_seconds=60)
+        assert status.start is not None
+
+    def test_status_with_notes(self):
+        """Status should accept notes."""
+        status = Status(duration_seconds=60, notes="Working on blog post")
+        assert status.notes == "Working on blog post"
+
     def test_session_types(self):
         """Session types should be correct values."""
         assert SessionType.BREAK == 0
         assert SessionType.FOCUS == 1
+        assert SessionType.DEEP == 2
+
+
+class TestDeepCommand:
+    """Test deep command."""
+
+    def test_deep_help(self):
+        """Deep command should have help text."""
+        result = runner.invoke(app, ["deep", "--help"])
+        assert result.exit_code == 0
+        assert "deep work" in result.stdout.lower()
+
+    def test_deep_default_duration(self):
+        """Deep command should work with default duration."""
+        result = runner.invoke(app, ["deep"])
+        assert result.exit_code == 0
+        assert "Deep work started" in result.stdout
+
+    def test_deep_with_notes(self):
+        """Deep command should accept notes."""
+        result = runner.invoke(app, ["deep", "Working on API refactor"])
+        assert result.exit_code == 0
+        assert "API refactor" in result.stdout
+
+    def test_deep_with_duration(self):
+        """Deep command should accept custom duration."""
+        result = runner.invoke(app, ["deep", "-d", "2h"])
+        assert result.exit_code == 0
+        assert "2h00m" in result.stdout
+
+
+class TestStartWithNotes:
+    """Test start command with notes."""
+
+    def test_start_with_notes(self):
+        """Start command should accept notes."""
+        result = runner.invoke(app, ["start", "Quick fix"])
+        assert result.exit_code == 0
+        assert "Quick fix" in result.stdout
+
+    def test_start_with_notes_and_duration(self):
+        """Start command should accept both notes and duration."""
+        result = runner.invoke(app, ["start", "Quick fix", "-d", "50m"])
+        assert result.exit_code == 0
+        assert "Quick fix" in result.stdout
+        assert "50m" in result.stdout
+
+
+class TestInitCommand:
+    """Test init command."""
+
+    def test_init_help(self):
+        """Init command should have help text."""
+        result = runner.invoke(app, ["init", "--help"])
+        assert result.exit_code == 0
+        assert "database" in result.stdout.lower()

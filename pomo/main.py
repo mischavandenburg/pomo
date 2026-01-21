@@ -1,5 +1,6 @@
 """CLI entry point for pomo."""
 
+from datetime import datetime, timezone
 from typing import Optional
 
 import typer
@@ -7,6 +8,7 @@ from typing_extensions import Annotated
 
 from pomo import __version__
 from pomo.config import get_config
+from pomo.db import init_db, sync_session
 from pomo.status import read_status, write_status, Status, SessionType
 from pomo.output import success, info, error
 from pomo.timer import get_remaining, format_duration, get_emoji
@@ -28,25 +30,43 @@ def main(ctx: typer.Context) -> None:
     if ctx.invoked_subcommand is not None:
         return
 
-    status = read_status()
+    current_status = read_status()
 
     # No active session
-    if status.end is None:
+    if current_status.end is None:
         return
 
     config = get_config()
-    remaining = get_remaining(status)
-    emoji = get_emoji(config, status, remaining)
+    remaining = get_remaining(current_status)
+    emoji = get_emoji(config, current_status, remaining)
     formatted = format_duration(remaining)
 
+    # Clean output only - just emoji + time for tmux
     typer.echo(f"{emoji} {formatted}")
+
+    # Silent auto-sync when timer completes
+    if remaining <= 0 and not current_status.notified and current_status.start:
+        sync_session(
+            session_type=current_status.session_type.name.lower(),
+            started_at=current_status.start,
+            ended_at=current_status.end,
+            planned_seconds=current_status.duration_seconds,
+            completed=True,
+            notes=current_status.notes,
+        )
+        current_status.notified = True
+        write_status(current_status)
 
 
 @app.command()
 def start(
+    notes: Annotated[
+        Optional[str],
+        typer.Argument(help="What you're working on"),
+    ] = None,
     duration: Annotated[
         Optional[str],
-        typer.Argument(help="Duration (e.g., 25m, 1h30m)"),
+        typer.Option("--duration", "-d", help="Duration (e.g., 25m, 1h30m)"),
     ] = None,
 ) -> None:
     """
@@ -60,9 +80,44 @@ def start(
     status = Status(
         session_type=SessionType.FOCUS,
         duration_seconds=dur,
+        notes=notes,
     )
     write_status(status)
-    success(f"Focus session started ({format_duration(dur)})")
+    msg = f"Focus session started ({format_duration(dur)})"
+    if notes:
+        msg += f' - "{notes}"'
+    success(msg)
+
+
+@app.command()
+def deep(
+    notes: Annotated[
+        Optional[str],
+        typer.Argument(help="What you're working on"),
+    ] = None,
+    duration: Annotated[
+        Optional[str],
+        typer.Option("--duration", "-d", help="Duration (e.g., 90m, 2h)"),
+    ] = None,
+) -> None:
+    """
+    Start a deep work session (90 minutes default).
+
+    Deep work sessions are longer, focused periods for complex tasks.
+    """
+    config = get_config()
+    dur = parse_duration(duration) if duration else config.durations.deep
+
+    status = Status(
+        session_type=SessionType.DEEP,
+        duration_seconds=dur,
+        notes=notes,
+    )
+    write_status(status)
+    msg = f"Deep work started ({format_duration(dur)})"
+    if notes:
+        msg += f' - "{notes}"'
+    success(msg)
 
 
 @app.command(name="break")
@@ -90,7 +145,23 @@ def break_cmd(
 
 @app.command()
 def stop() -> None:
-    """Stop the current session."""
+    """Stop the current session early."""
+    current_status = read_status()
+
+    # Sync to database if there was an active session
+    if current_status.start and not current_status.notified:
+        ended_at = datetime.now(timezone.utc)
+        synced = sync_session(
+            session_type=current_status.session_type.name.lower(),
+            started_at=current_status.start,
+            ended_at=ended_at,
+            planned_seconds=current_status.duration_seconds,
+            completed=False,  # Stopped early
+            notes=current_status.notes,
+        )
+        if synced:
+            info("Session synced to database (stopped early)")
+
     write_status(Status())
     info("Session stopped")
 
@@ -98,17 +169,31 @@ def stop() -> None:
 @app.command()
 def status() -> None:
     """Show detailed status of the current session."""
-    status = read_status()
+    current_status = read_status()
 
-    if status.end is None:
+    if current_status.end is None:
         info("No active session")
         return
 
-    remaining = get_remaining(status)
-    session_type = "Focus" if status.session_type == SessionType.FOCUS else "Break"
+    remaining = get_remaining(current_status)
+    session_type = current_status.session_type.name.capitalize()
 
     info(f"Session: {session_type}")
     info(f"Remaining: {format_duration(remaining)}")
+    if current_status.notes:
+        info(f"Notes: {current_status.notes}")
+    if current_status.start:
+        info(f"Started: {current_status.start.strftime('%H:%M')}")
+
+
+@app.command()
+def init() -> None:
+    """Initialize database table for session tracking."""
+    if init_db():
+        success("Database initialized successfully")
+    else:
+        error("Failed to initialize database. Check POMO_DATABASE_URL.")
+        raise typer.Exit(code=1)
 
 
 @app.command()
