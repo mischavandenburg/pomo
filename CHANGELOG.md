@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/mischavandenburg/pomo/compare/v0.1.0...v0.2.0) (2026-01-21)
+
+
+### Features
+
+* add deep work tracking with database sync ([3c92e09](https://github.com/mischavandenburg/pomo/commit/3c92e0944ef4a7c1e3a381af3550c2cd980cf0ff))
+
 ## 0.1.0 (2026-01-21)
 
 
