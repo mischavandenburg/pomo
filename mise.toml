@@ -1,3 +1,7 @@
 [tools]
 uv = "latest"
 python = "3.14"
+
+[tasks.pre-commit]
+description = "Run linting and tests before commit"
+run = "uv run ruff check pomo/ tests/ && uv run pytest tests/ -q"

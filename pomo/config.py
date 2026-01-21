@@ -27,11 +27,21 @@ class Emojis:
 
 
 @dataclass
+class Notifications:
+    """Desktop notification settings."""
+
+    enabled: bool = True
+    urgency: str = "normal"  # low, normal, critical
+    icon: Optional[str] = None
+
+
+@dataclass
 class Config:
     """Application configuration."""
 
     durations: Durations = field(default_factory=Durations)
     emojis: Emojis = field(default_factory=Emojis)
+    notifications: Notifications = field(default_factory=Notifications)
     sound: str = "default"
 
 
@@ -86,6 +96,14 @@ def get_config() -> Config:
 
             if "sound" in data:
                 config.sound = data["sound"]
+
+            if "notifications" in data:
+                if "enabled" in data["notifications"]:
+                    config.notifications.enabled = data["notifications"]["enabled"]
+                if "urgency" in data["notifications"]:
+                    config.notifications.urgency = data["notifications"]["urgency"]
+                if "icon" in data["notifications"]:
+                    config.notifications.icon = data["notifications"]["icon"]
 
         except (json.JSONDecodeError, KeyError):
             pass  # Use defaults on error

@@ -9,6 +9,7 @@ from typing_extensions import Annotated
 from pomo import __version__
 from pomo.config import get_config
 from pomo.db import init_db, sync_session
+from pomo.notify import send_notification
 from pomo.status import read_status, write_status, Status, SessionType
 from pomo.output import success, info, error
 from pomo.timer import get_remaining, format_duration, get_emoji
@@ -46,6 +47,14 @@ def main(ctx: typer.Context) -> None:
 
     # Silent auto-sync when timer completes
     if remaining <= 0 and not current_status.notified and current_status.start:
+        # Send desktop notification
+        if config.notifications.enabled:
+            send_notification(
+                current_status,
+                urgency=config.notifications.urgency,
+                icon=config.notifications.icon,
+            )
+
         sync_session(
             session_type=current_status.session_type.name.lower(),
             started_at=current_status.start,
