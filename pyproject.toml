@@ -1,6 +1,6 @@
 [project]
 name = "pomo"
-version = "0.2.0"
+version = "0.3.0"
 description = "A pomodoro timer CLI with quantified-self tracking"
 authors = [{ name = "Mischa van den Burg" }]
 readme = "README.md"

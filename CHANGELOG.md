@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/mischavandenburg/pomo/compare/v0.2.0...v0.3.0) (2026-01-21)
+
+
+### Features
+
+* add desktop notifications when timer ends ([467c9a2](https://github.com/mischavandenburg/pomo/commit/467c9a2e3f7851b94e9f8098673f83e645653cc3))
+
+
+### Documentation
+
+* add deep work and database integration docs ([48a0670](https://github.com/mischavandenburg/pomo/commit/48a06703a35758d7e897329ac79be3fb557a5b03))
+
 ## [0.2.0](https://github.com/mischavandenburg/pomo/compare/v0.1.0...v0.2.0) (2026-01-21)
 
 
