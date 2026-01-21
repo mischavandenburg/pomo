@@ -6,13 +6,10 @@ A pomodoro timer CLI with quantified-self tracking.
 
 ```bash
 # Using pipx (recommended)
-pipx install pomo
+pipx install git+https://github.com/mischavandenburg/pomo.git
 
 # Using uv
-uv tool install pomo
-
-# Using pip
-pip install pomo
+uv tool install git+https://github.com/mischavandenburg/pomo.git
 ```
 
 ## Usage
@@ -81,9 +78,9 @@ The default values can be customized by creating a `~/.config/pomo/config.json` 
     "focus": "25m"
   },
   "emojis": {
-    "break": "\ud83e\udd42",
-    "focus": "\ud83c\udf45",
-    "warn": ["\ud83d\udd34", "\u2b55"]
+    "break": "🥂",
+    "focus": "🍅",
+    "warn": ["🔴", "⭕"]
   },
   "sound": "default"
 }
