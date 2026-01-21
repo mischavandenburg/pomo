@@ -51,6 +51,45 @@ def init_db() -> bool:
         conn.close()
 
 
+def get_sessions(limit: int = 10) -> list[dict]:
+    """Fetch recent sessions from the database."""
+    conn = get_connection()
+    if not conn:
+        return []
+
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT session_type, started_at, ended_at,
+                           planned_duration_seconds, actual_duration_seconds,
+                           completed, notes
+                    FROM pomodoro_sessions
+                    ORDER BY started_at DESC
+                    LIMIT %s
+                    """,
+                    (limit,),
+                )
+                rows = cur.fetchall()
+                return [
+                    {
+                        "session_type": row[0],
+                        "started_at": row[1],
+                        "ended_at": row[2],
+                        "planned_seconds": row[3],
+                        "actual_seconds": row[4],
+                        "completed": row[5],
+                        "notes": row[6],
+                    }
+                    for row in rows
+                ]
+    except psycopg.Error:
+        return []
+    finally:
+        conn.close()
+
+
 def sync_session(
     session_type: str,
     started_at: datetime,

@@ -8,7 +8,7 @@ from typing_extensions import Annotated
 
 from pomo import __version__
 from pomo.config import get_config
-from pomo.db import init_db, sync_session
+from pomo.db import init_db, sync_session, get_sessions
 from pomo.notify import send_notification
 from pomo.status import read_status, write_status, Status, SessionType
 from pomo.output import success, info, error
@@ -203,6 +203,33 @@ def init() -> None:
     else:
         error("Failed to initialize database. Check POMO_DATABASE_URL.")
         raise typer.Exit(code=1)
+
+
+@app.command(name="list")
+def list_sessions(
+    limit: Annotated[
+        int,
+        typer.Argument(help="Number of sessions to show"),
+    ] = 10,
+) -> None:
+    """List recent sessions from the database."""
+    sessions = get_sessions(limit)
+
+    if not sessions:
+        info("No sessions found (check POMO_DATABASE_URL)")
+        return
+
+    for session in sessions:
+        session_type = session["session_type"].capitalize()
+        started = session["started_at"].strftime("%Y-%m-%d %H:%M")
+        completed = "+" if session["completed"] else "-"
+        duration = format_duration(session["actual_seconds"] or session["planned_seconds"])
+        notes = session["notes"] or ""
+
+        if notes:
+            typer.echo(f"{completed} {started}  {session_type:5}  {duration:>7}  {notes}")
+        else:
+            typer.echo(f"{completed} {started}  {session_type:5}  {duration:>7}")
 
 
 @app.command()
